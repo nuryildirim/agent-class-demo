@@ -1,0 +1,104 @@
+{
+  "_about": "The expense policy for Lumen & Co., a fictional company. Each rule becomes one row in the policy_rules table. rule_text is what the agent reads. limit_amount and limit_unit are what regular code checks.",
+  "rules": [
+    {
+      "id": "GEN-01",
+      "category": "all",
+      "title": "Submission deadline",
+      "rule_type": "deadline",
+      "limit_amount": 60,
+      "limit_unit": "days",
+      "rule_text": "Submit each claim within 60 days of the expense date. Claims submitted later than 60 days are rejected."
+    },
+    {
+      "id": "GEN-02",
+      "category": "all",
+      "title": "Receipts",
+      "rule_type": "receipt_required",
+      "limit_amount": 25,
+      "limit_unit": "per_claim",
+      "rule_text": "An itemized receipt is required for any expense over $25. The receipt total must match the amount claimed. If the receipt is missing, unreadable, or does not match the claimed amount, send the claim to review so the employee can correct it."
+    },
+    {
+      "id": "GEN-03",
+      "category": "all",
+      "title": "Duplicate claims",
+      "rule_type": "duplicate",
+      "limit_amount": null,
+      "limit_unit": null,
+      "rule_text": "Each expense may be claimed only once. A claim for an expense that was already submitted, either the same receipt or the same employee, merchant, date, and amount, is rejected."
+    },
+    {
+      "id": "GEN-04",
+      "category": "all",
+      "title": "Personal expenses",
+      "rule_type": "not_allowed",
+      "limit_amount": null,
+      "limit_unit": null,
+      "rule_text": "Personal expenses are not reimbursable. This includes alcohol, in-room movies, minibar items, personal entertainment, and traffic or parking fines."
+    },
+    {
+      "id": "GEN-05",
+      "category": "all",
+      "title": "When the policy is unclear",
+      "rule_type": "guidance",
+      "limit_amount": null,
+      "limit_unit": null,
+      "rule_text": "If this policy does not clearly cover an expense, send the claim to review for a person to decide. Do not approve or reject an expense based on a guess about what the policy intends."
+    },
+    {
+      "id": "MEAL-01",
+      "category": "meal",
+      "title": "Meal limit",
+      "rule_type": "limit",
+      "limit_amount": 50,
+      "limit_unit": "per_person",
+      "rule_text": "Meals during business travel or with clients are reimbursed up to $50 per person, including tax and tip. A meal over the limit is rejected, and the employee may resubmit for the allowed amount."
+    },
+    {
+      "id": "MEAL-02",
+      "category": "meal",
+      "title": "Group and client meals",
+      "rule_type": "guidance",
+      "limit_amount": null,
+      "limit_unit": null,
+      "rule_text": "For a meal covering more than one person, the purpose must name the attendees or their company and explain the business reason."
+    },
+    {
+      "id": "LODG-01",
+      "category": "lodging",
+      "title": "Hotel limit",
+      "rule_type": "limit",
+      "limit_amount": 250,
+      "limit_unit": "per_night",
+      "rule_text": "Hotel stays are reimbursed up to $250 per night, including taxes. In high-cost cities (New York, San Francisco, and Boston), up to $350 per night is allowed with written pre-approval from a manager. A high-cost-city stay over $250 per night without recorded pre-approval goes to review."
+    },
+    {
+      "id": "TRAV-01",
+      "category": "travel",
+      "title": "Getting around",
+      "rule_type": "guidance",
+      "limit_amount": null,
+      "limit_unit": null,
+      "rule_text": "Economy airfare, train tickets, taxis, rideshares, and airport parking are reimbursable when they are for business travel."
+    },
+    {
+      "id": "OFF-01",
+      "category": "office",
+      "title": "Home office equipment",
+      "rule_type": "annual_limit",
+      "limit_amount": 300,
+      "limit_unit": "per_year",
+      "rule_text": "Home office equipment, such as monitors, chairs, and keyboards, is reimbursed up to $300 per employee per calendar year. A purchase that would take the employee over the yearly limit is rejected, and the employee may resubmit for the remaining amount."
+    },
+    {
+      "id": "TRN-01",
+      "category": "training",
+      "title": "Training and conferences",
+      "rule_type": "limit",
+      "limit_amount": 1000,
+      "limit_unit": "per_claim",
+      "rule_text": "Conference registrations, online courses, and books related to your job are reimbursed up to $1,000 per claim."
+    }
+  ]
+}

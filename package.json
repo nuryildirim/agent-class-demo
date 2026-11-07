@@ -7,13 +7,17 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "make-receipts": "node scripts/make-sample-receipts.mjs"
+    "make-receipts": "node scripts/make-receipts.mjs",
+    "db:setup": "node --env-file=.env.local scripts/db-setup.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.319",
+    "@supabase/supabase-js": "^2.119.0",
     "next": "^16.4.5",
+    "postgres": "^4.1.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {

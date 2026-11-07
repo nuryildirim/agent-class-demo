@@ -1,0 +1,483 @@
+{
+  "_about": [
+    "Fake demo data. All people, companies, and receipts are made up.",
+    "employees: the people who submit claims.",
+    "past_claims: older claims that were already paid. They give the agent a history to search (for duplicates and yearly limits).",
+    "claims: the 20 new claims waiting for review. Each has an 'expected' answer, the correct outcome under data/policy.json.",
+    "The 'expected' answers are the answer key for the evaluation in build step 5. They are NOT written to the database, so the agent can never see them.",
+    "receipt: what the receipt image shows. scripts/make-receipts.mjs draws it. The receipt total is the sum of items + tax + tip. 'copy_of' reuses another claim's receipt image (a duplicate). 'blurry' makes a hard-to-read photo."
+  ],
+
+  "employees": {
+    "priya": { "name": "Priya Raman", "email": "priya.raman@example.com", "department": "Engineering" },
+    "marcus": { "name": "Marcus Webb", "email": "marcus.webb@example.com", "department": "Sales" },
+    "elena": { "name": "Elena Ortiz", "email": "elena.ortiz@example.com", "department": "Marketing" },
+    "sam": { "name": "Sam Okafor", "email": "sam.okafor@example.com", "department": "Engineering" },
+    "grace": { "name": "Grace Liu", "email": "grace.liu@example.com", "department": "Sales" },
+    "tom": { "name": "Tom Becker", "email": "tom.becker@example.com", "department": "Operations" }
+  },
+
+  "past_claims": [
+    {
+      "id": "H01",
+      "employee": "priya",
+      "category": "office",
+      "merchant": "Pixel Depot",
+      "amount": 200.81,
+      "expense_date": "2026-03-09",
+      "submitted_at": "2026-03-11T10:05:00-05:00",
+      "purpose": "24-inch monitor for my home office.",
+      "receipt": {
+        "merchant": "PIXEL DEPOT",
+        "address": ["88 Circuit Ave, Columbus OH", "pixeldepot.example"],
+        "meta": ["Date: 2026-03-09   14:12", "Order #PD-55310"],
+        "items": [["24in IPS monitor", 189.0]],
+        "tax": ["Sales tax 6.25%", 11.81],
+        "payment": "VISA ****2208   APPROVED"
+      }
+    },
+    {
+      "id": "H02",
+      "employee": "marcus",
+      "category": "meal",
+      "merchant": "Harbor Light Bistro",
+      "amount": 70.62,
+      "expense_date": "2026-10-14",
+      "attendees": 2,
+      "submitted_at": "2026-10-16T09:30:00-04:00",
+      "purpose": "Dinner with Dana Fox from Brightfield Corp to discuss renewing their contract.",
+      "receipt": {
+        "merchant": "HARBOR LIGHT BISTRO",
+        "address": ["412 Water Street, Portland ME", "Tel (207) 555-0148"],
+        "meta": ["Date: 2026-10-14   19:42", "Server: Dana   Table: 12   Guests: 2"],
+        "items": [["Grilled salmon", 28.0], ["Caesar salad", 14.5], ["Sparkling water x2", 9.0], ["Espresso", 4.5]],
+        "tax": ["Tax 8.25%", 4.62],
+        "tip": 10.0,
+        "payment": "VISA ****4417   APPROVED"
+      }
+    },
+    {
+      "id": "H03",
+      "employee": "grace",
+      "category": "lodging",
+      "merchant": "Lakeshore Inn",
+      "amount": 206.57,
+      "expense_date": "2026-08-18",
+      "nights": 1,
+      "submitted_at": "2026-08-21T16:40:00-05:00",
+      "purpose": "One night in Milwaukee for the Kessler Foods sales visit.",
+      "receipt": {
+        "merchant": "LAKESHORE INN",
+        "address": ["1200 Lake Drive, Milwaukee WI", "Tel (414) 555-0190"],
+        "meta": ["Check-in: 2026-08-18   Check-out: 2026-08-19", "Guest: Grace Liu   Room 318"],
+        "items": [["Room rate 08/18", 179.0]],
+        "tax": ["Occupancy tax 15.4%", 27.57],
+        "payment": "AMEX ****1009   APPROVED"
+      }
+    },
+    {
+      "id": "H04",
+      "employee": "sam",
+      "category": "travel",
+      "merchant": "Bay City Cab Co.",
+      "amount": 38.9,
+      "expense_date": "2026-09-15",
+      "submitted_at": "2026-09-17T08:15:00-07:00",
+      "purpose": "Taxi from the airport to the Oakland customer site.",
+      "receipt": {
+        "merchant": "BAY CITY CAB CO.",
+        "address": ["Cab #4471", "Tel (510) 555-0122"],
+        "meta": ["Date: 2026-09-15   08:02", "From: OAK Airport  To: 300 Harrison St"],
+        "items": [["Metered fare", 31.4], ["Airport surcharge", 2.5]],
+        "tip": 5.0,
+        "payment": "MC ****8850   APPROVED"
+      }
+    }
+  ],
+
+  "claims": [
+    {
+      "id": "C01",
+      "employee": "sam",
+      "category": "travel",
+      "merchant": "Bay City Cab Co.",
+      "amount": 42.15,
+      "expense_date": "2026-10-21",
+      "submitted_at": "2026-10-22T09:10:00-07:00",
+      "purpose": "Taxi from home to SFO for the Chicago customer workshop.",
+      "receipt": {
+        "merchant": "BAY CITY CAB CO.",
+        "address": ["Cab #2290", "Tel (510) 555-0122"],
+        "meta": ["Date: 2026-10-21   05:48", "From: 19 Pine St  To: SFO Airport"],
+        "items": [["Metered fare", 34.65], ["Airport surcharge", 2.5]],
+        "tip": 5.0,
+        "payment": "MC ****8850   APPROVED"
+      },
+      "expected": { "outcome": "approve", "rules": ["TRAV-01"], "reason": "Business taxi with a matching receipt." }
+    },
+    {
+      "id": "C02",
+      "employee": "elena",
+      "category": "meal",
+      "merchant": "Saffron Table",
+      "amount": 41.04,
+      "expense_date": "2026-10-15",
+      "attendees": 1,
+      "submitted_at": "2026-10-20T11:00:00-05:00",
+      "purpose": "Dinner on my own during the Chicago trade show.",
+      "receipt": {
+        "merchant": "SAFFRON TABLE",
+        "address": ["2210 W Devon Ave, Chicago IL", "Tel (773) 555-0161"],
+        "meta": ["Date: 2026-10-15   20:05", "Server: Ravi   Guests: 1"],
+        "items": [["Chicken tikka masala", 21.0], ["Garlic naan", 4.5], ["Mango lassi", 6.0]],
+        "tax": ["Tax 10.25%", 3.24],
+        "tip": 6.3,
+        "payment": "VISA ****6031   APPROVED"
+      },
+      "expected": { "outcome": "approve", "rules": ["MEAL-01"], "reason": "Solo travel dinner, $41.04, under the $50 per person limit." }
+    },
+    {
+      "id": "C03",
+      "employee": "grace",
+      "category": "lodging",
+      "merchant": "Lakeshore Inn",
+      "amount": 413.13,
+      "expense_date": "2026-10-19",
+      "nights": 2,
+      "submitted_at": "2026-10-23T15:20:00-05:00",
+      "purpose": "Two nights in Milwaukee for the Kessler Foods quarterly review.",
+      "receipt": {
+        "merchant": "LAKESHORE INN",
+        "address": ["1200 Lake Drive, Milwaukee WI", "Tel (414) 555-0190"],
+        "meta": ["Check-in: 2026-10-19   Check-out: 2026-10-21", "Guest: Grace Liu   Room 204"],
+        "items": [["Room rate 10/19", 179.0], ["Room rate 10/20", 179.0]],
+        "tax": ["Occupancy tax 15.4%", 55.13],
+        "payment": "AMEX ****1009   APPROVED"
+      },
+      "expected": { "outcome": "approve", "rules": ["LODG-01"], "reason": "$206.57 per night, under the $250 limit." }
+    },
+    {
+      "id": "C04",
+      "employee": "tom",
+      "category": "training",
+      "merchant": "LearnLoop Online",
+      "amount": 49.0,
+      "expense_date": "2026-10-27",
+      "submitted_at": "2026-10-28T08:45:00-05:00",
+      "purpose": "Online course, SQL for Analysts, for the new inventory reporting work.",
+      "receipt": {
+        "merchant": "LEARNLOOP ONLINE",
+        "address": ["learnloop.example", "Order confirmation"],
+        "meta": ["Date: 2026-10-27   21:13", "Order #LL-204417"],
+        "items": [["Course: SQL for Analysts", 49.0]],
+        "payment": "VISA ****3392   PAID"
+      },
+      "expected": { "outcome": "approve", "rules": ["TRN-01"], "reason": "Job-related course under the $1,000 limit." }
+    },
+    {
+      "id": "C05",
+      "employee": "grace",
+      "category": "meal",
+      "merchant": "Olive & Ash",
+      "amount": 59.0,
+      "expense_date": "2026-10-23",
+      "attendees": 2,
+      "submitted_at": "2026-10-26T10:30:00-05:00",
+      "purpose": "Lunch with Jordan Lee from Kessler Foods to plan the 2027 order schedule.",
+      "receipt": {
+        "merchant": "OLIVE & ASH",
+        "address": ["57 Market Street, Milwaukee WI", "Tel (414) 555-0137"],
+        "meta": ["Date: 2026-10-23   12:31", "Server: Maya   Table: 7   Guests: 2"],
+        "items": [["Grilled chicken sandwich", 17.0], ["Mushroom risotto", 22.0], ["Iced tea x2", 7.0]],
+        "tax": ["Tax 8.25%", 3.8],
+        "tip": 9.2,
+        "payment": "AMEX ****1009   APPROVED"
+      },
+      "expected": { "outcome": "approve", "rules": ["MEAL-01", "MEAL-02"], "reason": "Client lunch, $29.50 per person, attendee and purpose named." }
+    },
+    {
+      "id": "C06",
+      "employee": "marcus",
+      "category": "travel",
+      "merchant": "Skyway Air",
+      "amount": 312.0,
+      "expense_date": "2026-10-12",
+      "submitted_at": "2026-10-20T13:00:00-04:00",
+      "purpose": "Economy round trip Boston to Chicago for the Brightfield Corp pitch.",
+      "receipt": {
+        "merchant": "SKYWAY AIR",
+        "address": ["E-ticket receipt", "skyway.example"],
+        "meta": ["Booked: 2026-10-12   Conf: K7QW2M", "BOS-ORD-BOS   Economy (Main)"],
+        "items": [["Base fare", 268.0], ["Taxes and fees", 44.0]],
+        "payment": "VISA ****4417   PAID"
+      },
+      "expected": { "outcome": "approve", "rules": ["TRAV-01"], "reason": "Economy airfare for business travel." }
+    },
+    {
+      "id": "C07",
+      "employee": "priya",
+      "category": "training",
+      "merchant": "DataConf 2026",
+      "amount": 199.0,
+      "expense_date": "2026-10-05",
+      "submitted_at": "2026-10-22T09:00:00-04:00",
+      "purpose": "Registration for DataConf, a data engineering conference relevant to my team's pipeline work.",
+      "receipt": {
+        "merchant": "DATACONF 2026",
+        "address": ["Registration receipt", "dataconf.example"],
+        "meta": ["Date: 2026-10-05   10:22", "Attendee: Priya Raman"],
+        "items": [["Early-bird pass", 199.0]],
+        "payment": "VISA ****2208   PAID"
+      },
+      "expected": { "outcome": "approve", "rules": ["TRN-01"], "reason": "Job-related conference under the $1,000 limit." }
+    },
+    {
+      "id": "C08",
+      "employee": "sam",
+      "category": "travel",
+      "merchant": "Zip Rides",
+      "amount": 18.6,
+      "expense_date": "2026-10-24",
+      "submitted_at": "2026-10-27T18:00:00-07:00",
+      "purpose": "Rideshare from the hotel to the customer workshop in Chicago.",
+      "receipt": {
+        "merchant": "ZIP RIDES",
+        "address": ["Trip receipt", "ziprides.example"],
+        "meta": ["Date: 2026-10-24   08:15", "From: Hotel Lux  To: 233 S Wacker Dr"],
+        "items": [["Trip fare", 15.1], ["Booking fee", 1.5]],
+        "tip": 2.0,
+        "payment": "MC ****8850   CHARGED"
+      },
+      "expected": { "outcome": "approve", "rules": ["TRAV-01"], "reason": "Business rideshare with a matching receipt." }
+    },
+    {
+      "id": "C09",
+      "employee": "elena",
+      "category": "travel",
+      "merchant": "Airport Long-Term Parking",
+      "amount": 24.0,
+      "expense_date": "2026-10-16",
+      "submitted_at": "2026-10-20T11:05:00-05:00",
+      "purpose": "Airport parking while I was at the Chicago trade show.",
+      "receipt": {
+        "merchant": "AIRPORT LONG-TERM PARKING",
+        "address": ["Lot E", "Exit lane 3"],
+        "meta": ["Entry: 2026-10-13 06:10", "Exit:  2026-10-16 21:40"],
+        "items": [["Parking 3 days x 8.00", 24.0]],
+        "payment": "VISA ****6031   APPROVED"
+      },
+      "expected": { "outcome": "approve", "rules": ["TRAV-01"], "reason": "Business airport parking." }
+    },
+    {
+      "id": "C10",
+      "employee": "sam",
+      "category": "office",
+      "merchant": "Pixel Depot",
+      "amount": 211.44,
+      "expense_date": "2026-10-30",
+      "submitted_at": "2026-11-02T10:00:00-08:00",
+      "purpose": "27-inch monitor for my home office.",
+      "receipt": {
+        "merchant": "PIXEL DEPOT",
+        "address": ["88 Circuit Ave, Columbus OH", "pixeldepot.example"],
+        "meta": ["Date: 2026-10-30   16:40", "Order #PD-61877"],
+        "items": [["27in IPS monitor", 199.0]],
+        "tax": ["Sales tax 6.25%", 12.44],
+        "payment": "MC ****8850   APPROVED"
+      },
+      "expected": { "outcome": "approve", "rules": ["OFF-01"], "reason": "First home office purchase this year, under the $300 yearly limit." }
+    },
+    {
+      "id": "C11",
+      "employee": "tom",
+      "category": "meal",
+      "merchant": "Sunrise Bagel Co.",
+      "amount": 13.64,
+      "expense_date": "2026-10-29",
+      "attendees": 1,
+      "submitted_at": "2026-11-01T09:00:00-05:00",
+      "purpose": "Breakfast before the Denver warehouse visit.",
+      "receipt": {
+        "merchant": "SUNRISE BAGEL CO.",
+        "address": ["1530 Blake St, Denver CO", "Tel (303) 555-0174"],
+        "meta": ["Date: 2026-10-29   07:20", "Order #118"],
+        "items": [["Egg and cheese bagel", 7.5], ["Coffee, large", 3.25]],
+        "tax": ["Tax 8.31%", 0.89],
+        "tip": 2.0,
+        "payment": "VISA ****3392   APPROVED"
+      },
+      "expected": { "outcome": "approve", "rules": ["MEAL-01"], "reason": "Travel breakfast under the meal limit." }
+    },
+    {
+      "id": "C12",
+      "employee": "elena",
+      "category": "travel",
+      "merchant": "Coastline Rail",
+      "amount": 86.0,
+      "expense_date": "2026-10-26",
+      "submitted_at": "2026-10-29T14:10:00-04:00",
+      "purpose": "Train from New York to Philadelphia for the Ardent Media meeting.",
+      "receipt": {
+        "merchant": "COASTLINE RAIL",
+        "address": ["Ticket receipt", "coastlinerail.example"],
+        "meta": ["Travel date: 2026-10-26", "NYP to PHL   Coach   Seat 7C"],
+        "items": [["Coach fare", 68.0]],
+        "payment": "VISA ****6031   PAID"
+      },
+      "expected": { "outcome": "review", "rules": ["GEN-02"], "reason": "Claimed $86.00 but the receipt shows $68.00 (digits likely swapped). Ask the employee to correct it." }
+    },
+    {
+      "id": "C13",
+      "employee": "marcus",
+      "category": "meal",
+      "merchant": "Ember Steakhouse",
+      "amount": 171.4,
+      "expense_date": "2026-10-28",
+      "attendees": 2,
+      "submitted_at": "2026-10-30T09:20:00-04:00",
+      "purpose": "Dinner with Alex Chen from Brightfield Corp after the contract signing.",
+      "receipt": {
+        "merchant": "EMBER STEAKHOUSE",
+        "address": ["9 Beacon Street, Boston MA", "Tel (617) 555-0119"],
+        "meta": ["Date: 2026-10-28   20:15", "Server: Luis   Table: 22   Guests: 2"],
+        "items": [["Ribeye 16oz", 58.0], ["Filet mignon 8oz", 54.0], ["Side dishes x2", 24.0], ["Sparkling water x2", 8.0]],
+        "tax": ["Tax 8.25%", 11.88],
+        "tip": 15.52,
+        "payment": "VISA ****4417   APPROVED"
+      },
+      "expected": { "outcome": "reject", "rules": ["MEAL-01"], "reason": "$85.70 per person, over the $50 per person meal limit." }
+    },
+    {
+      "id": "C14",
+      "employee": "marcus",
+      "category": "meal",
+      "merchant": "Harbor Light Bistro",
+      "amount": 70.62,
+      "expense_date": "2026-10-14",
+      "attendees": 2,
+      "submitted_at": "2026-11-03T08:50:00-05:00",
+      "purpose": "Client dinner with Brightfield Corp.",
+      "receipt": { "copy_of": "H02" },
+      "expected": { "outcome": "reject", "rules": ["GEN-03"], "reason": "Duplicate of past claim H02: same receipt, already paid." }
+    },
+    {
+      "id": "C15",
+      "employee": "tom",
+      "category": "travel",
+      "merchant": "Metro Taxi",
+      "amount": 31.3,
+      "expense_date": "2026-07-20",
+      "submitted_at": "2026-10-30T16:00:00-05:00",
+      "purpose": "Taxi to the Denver warehouse. Found this receipt in my bag.",
+      "receipt": {
+        "merchant": "METRO TAXI",
+        "address": ["Cab #815", "Tel (303) 555-0108"],
+        "meta": ["Date: 2026-07-20   13:05", "From: Union Station  To: 4800 Dahlia St"],
+        "items": [["Metered fare", 27.3]],
+        "tip": 4.0,
+        "payment": "VISA ****3392   APPROVED"
+      },
+      "expected": { "outcome": "reject", "rules": ["GEN-01"], "reason": "Submitted 102 days after the expense, past the 60-day deadline." }
+    },
+    {
+      "id": "C16",
+      "employee": "grace",
+      "category": "meal",
+      "merchant": "The Copper Tap",
+      "amount": 63.87,
+      "expense_date": "2026-10-30",
+      "attendees": 5,
+      "submitted_at": "2026-11-02T12:00:00-05:00",
+      "purpose": "Team celebration after closing the Kessler Foods deal.",
+      "receipt": {
+        "merchant": "THE COPPER TAP",
+        "address": ["300 N Water St, Milwaukee WI", "Tel (414) 555-0183"],
+        "meta": ["Date: 2026-10-30   18:55", "Tab: Grace   Guests: 5"],
+        "items": [["IPA draft x4", 30.0], ["House red wine x2", 22.0], ["Hard cider", 7.0]],
+        "tax": ["Tax 8.25%", 4.87],
+        "payment": "AMEX ****1009   APPROVED"
+      },
+      "expected": { "outcome": "reject", "rules": ["GEN-04"], "reason": "The whole receipt is alcohol, which is not reimbursable." }
+    },
+    {
+      "id": "C17",
+      "employee": "priya",
+      "category": "meal",
+      "merchant": "Golden Wok",
+      "amount": 58.25,
+      "expense_date": "2026-10-31",
+      "attendees": 2,
+      "submitted_at": "2026-11-03T13:30:00-05:00",
+      "purpose": "Lunch with Kim Park from Ardent Media to scope a data integration.",
+      "receipt": {
+        "merchant": "GOLDEN WOK",
+        "address": ["71 Mott Street, New York NY", "Tel (212) 555-0156"],
+        "meta": ["Date: 2026-10-31   12:48", "Table: 4   Guests: 2"],
+        "items": [["Kung pao chicken", 16.5], ["Beef with broccoli", 18.0], ["Spring rolls", 7.0], ["Jasmine tea", 4.0]],
+        "tax": ["Tax 8.875%", 4.04],
+        "tip": 8.71,
+        "payment": "VISA ****2208   APPROVED",
+        "blurry": true
+      },
+      "expected": { "outcome": "review", "rules": ["GEN-02"], "reason": "Receipt is too blurry to confirm the items and total. Ask for a clearer photo." }
+    },
+    {
+      "id": "C18",
+      "employee": "tom",
+      "category": "other",
+      "merchant": "Commons Coworking",
+      "amount": 43.3,
+      "expense_date": "2026-11-02",
+      "submitted_at": "2026-11-04T10:15:00-07:00",
+      "purpose": "Day pass at a coworking space in Denver. The hotel wifi was down and I had client calls all day.",
+      "receipt": {
+        "merchant": "COMMONS COWORKING",
+        "address": ["2600 Walnut St, Denver CO", "commons.example"],
+        "meta": ["Date: 2026-11-02   08:30", "Member: Guest"],
+        "items": [["Day pass", 40.0]],
+        "tax": ["Tax 8.25%", 3.3],
+        "payment": "VISA ****3392   APPROVED"
+      },
+      "expected": { "outcome": "review", "rules": ["GEN-05"], "reason": "The policy does not cover coworking spaces. A person should decide." }
+    },
+    {
+      "id": "C19",
+      "employee": "marcus",
+      "category": "lodging",
+      "merchant": "Hudson Grand Hotel",
+      "amount": 663.26,
+      "expense_date": "2026-10-26",
+      "nights": 2,
+      "submitted_at": "2026-10-29T17:45:00-04:00",
+      "purpose": "Two nights in New York for the Ardent Media partnership meetings.",
+      "receipt": {
+        "merchant": "HUDSON GRAND HOTEL",
+        "address": ["455 W 34th Street, New York NY", "Tel (212) 555-0101"],
+        "meta": ["Check-in: 2026-10-26   Check-out: 2026-10-28", "Guest: Marcus Webb   Room 1712"],
+        "items": [["Room rate 10/26", 289.0], ["Room rate 10/27", 289.0]],
+        "tax": ["Hotel taxes 14.75%", 85.26],
+        "payment": "VISA ****4417   APPROVED"
+      },
+      "expected": { "outcome": "review", "rules": ["LODG-01"], "reason": "$331.63 per night in New York: allowed up to $350 only with manager pre-approval, and none is recorded." }
+    },
+    {
+      "id": "C20",
+      "employee": "priya",
+      "category": "office",
+      "merchant": "ErgoWorks",
+      "amount": 243.31,
+      "expense_date": "2026-11-01",
+      "submitted_at": "2026-11-04T09:40:00-05:00",
+      "purpose": "Ergonomic desk chair for my home office.",
+      "receipt": {
+        "merchant": "ERGOWORKS",
+        "address": ["ergoworks.example", "Order confirmation"],
+        "meta": ["Date: 2026-11-01   19:02", "Order #EW-30981"],
+        "items": [["Mesh task chair", 229.0]],
+        "tax": ["Sales tax 6.25%", 14.31],
+        "payment": "VISA ****2208   PAID"
+      },
+      "expected": { "outcome": "reject", "rules": ["OFF-01"], "reason": "With past claim H01 ($200.81), this takes Priya to $444.12 this year, over the $300 yearly limit." }
+    }
+  ]
+}
