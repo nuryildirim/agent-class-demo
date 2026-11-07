@@ -21,6 +21,7 @@ Build a demo for a tutorial on agentic AI workflows for the workplace. An AI age
 | Agent framework | Claude Agent SDK |
 | Model access | Paid Anthropic API credits |
 | Canvas use cases | Dropped from scope |
+| Replay mode | Dropped from scope; live demo in class |
 
 Earlier options considered but not chosen: Vercel AI SDK, LangGraph, n8n, Gemini's free tier, and local models through Ollama.
 
@@ -151,9 +152,9 @@ Use these to show a simple accuracy score, which also introduces evaluation. Do 
 - Choose the live demo model based on the results.
 
 ### 6. Prepare for class
-- Add replay mode with recorded runs, so students can explore without an API key. It also serves as a backup if the network fails.
-- Write the README for students.
-- Rehearse the walkthrough.
+- ~~Add replay mode with recorded runs.~~ Dropped (November 7, 2026): the class gets a live demo, and students read the code rather than run it.
+- Write the README for students: `README.md`.
+- Rehearse the walkthrough: `_docs/walkthrough.md`.
 
 ## Prototype done when
 
@@ -163,7 +164,7 @@ Use these to show a simple accuracy score, which also introduces evaluation. Do 
 - [ ] The agent cannot approve, reject, or pay a claim.
 - [ ] An admin decision triggers the final action through app code.
 - [ ] The 20-claim evaluation runs and reports an accuracy score.
-- [ ] Replay mode works without an API key.
+- ~~Replay mode works without an API key.~~ Dropped.
 - [ ] A student can follow the README to understand and run the project.
 
 ## Estimated costs
