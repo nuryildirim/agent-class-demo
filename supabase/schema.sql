@@ -85,8 +85,9 @@ create index claims_employee_idx on claims (employee_email);
 -- receipts: the receipt for a claim
 -- ---------------------------------------------------------------------------
 -- The image itself lives in Supabase Storage (bucket "receipts").
--- This row points to it. "extracted" is filled in later, when the model
--- reads the receipt and turns it into structured fields (build step 3).
+-- This row points to it. What the model reads off the image is stored
+-- per run, in recommendations.receipt_reading, so two models reading the
+-- same receipt can be compared.
 create table receipts (
   id            text primary key,              -- e.g. 'R01'
   claim_id      text not null references claims (id) on delete cascade,
@@ -94,7 +95,6 @@ create table receipts (
   mime_type     text not null default 'image/png',
   sha256        text not null,                 -- fingerprint of the file; the
                                                -- same file twice = a duplicate
-  extracted     jsonb,                         -- model output, null until read
   uploaded_at   timestamptz not null default now()
 );
 create index receipts_claim_idx on receipts (claim_id);
@@ -156,6 +156,8 @@ create table recommendations (
   evidence           jsonb not null default '[]',  -- list of {source, detail}
   policy_rule_ids    text[] not null default '{}', -- rules the agent relied on
   employee_question  text,                     -- a draft; the admin decides to send it
+  receipt_reading    jsonb,                    -- what the model read off the receipt
+                                               -- (merchant, date, items, total, legibility)
   created_at         timestamptz not null default now()
 );
 create index recommendations_claim_idx on recommendations (claim_id);

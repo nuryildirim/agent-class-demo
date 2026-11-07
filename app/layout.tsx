@@ -1,4 +1,4 @@
-export const metadata = { title: "Expense Review Agent: Step 1" };
+export const metadata = { title: "Expense Review Agent" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

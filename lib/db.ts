@@ -51,7 +51,6 @@ export type Receipt = {
   storage_path: string;
   mime_type: string;
   sha256: string;
-  extracted: Record<string, unknown> | null;
   uploaded_at: string;
 };
 
@@ -100,7 +99,18 @@ export type Recommendation = {
   evidence: { source: string; detail: string }[];
   policy_rule_ids: string[];
   employee_question: string | null;
+  receipt_reading: ReceiptReading | null;
   created_at: string;
+};
+
+// What the model read off a receipt image (the "Extract" step).
+export type ReceiptReading = {
+  legibility: "clear" | "partly_readable" | "unreadable";
+  merchant: string | null;
+  date: string | null;
+  items: { description: string; amount: number }[];
+  total: number | null;
+  currency: string | null;
 };
 
 export type AdminDecision = {
