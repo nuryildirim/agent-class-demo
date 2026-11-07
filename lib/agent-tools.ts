@@ -59,7 +59,11 @@ export function createReviewTools(claimId: string, runId: string) {
     {},
     async () => {
       const { claim, receipt } = await loadClaim(claimId);
-      return ok({ ...claim, has_receipt: receipt !== null });
+      // Leave out the claim's status. If an admin already decided this claim,
+      // the agent must not see that and simply agree with it: its
+      // recommendation should come from the evidence alone.
+      const { status: _status, ...withoutStatus } = claim;
+      return ok({ ...withoutStatus, has_receipt: receipt !== null });
     },
     readOnly
   );

@@ -59,7 +59,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .badge.reject, .badge.rejected, .badge.failed { color: var(--reject); }
 .badge.review, .badge.running { color: var(--review); }
 .badge.needs_info { color: var(--info); }
-.badge.submitted, .badge.recommended { color: var(--muted); }
+.badge.submitted, .badge.recommended, .badge.completed { color: var(--muted); }
 
 /* Forms */
 form.stack { display: grid; gap: 12px; max-width: 560px; }

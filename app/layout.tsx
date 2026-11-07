@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <nav>
             <Link href="/employee">Employee view</Link>
             <Link href="/admin">Admin view</Link>
+            <Link href="/admin/eval">Evaluation</Link>
           </nav>
         </header>
         <main>{children}</main>

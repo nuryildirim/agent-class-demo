@@ -51,7 +51,9 @@ export async function listQueue(): Promise<QueueRow[]> {
 // One claim, with everything the admin needs to decide
 // ---------------------------------------------------------------------------
 
-export async function getClaimDetail(claimId: string) {
+// runId picks which agent run to show (the evaluation page links to old
+// runs). Without it, the page shows the latest run.
+export async function getClaimDetail(claimId: string, runId?: string) {
   const claims = await rows<Claim>(db.from("claims").select("*").eq("id", claimId));
   if (claims.length === 0) return null;
 
@@ -73,10 +75,11 @@ export async function getClaimDetail(claimId: string) {
     receiptUrl = data?.signedUrl ?? null;
   }
 
-  // The trace: every tool call from the latest run, in order.
+  // The trace: every tool call from the run being shown, in order.
   const latestRun = runs[0] ?? null;
-  const toolEvents = latestRun
-    ? await rows<ToolEvent>(db.from("tool_events").select("*").eq("run_id", latestRun.id).order("seq"))
+  const shownRun = runs.find((run) => run.id === runId) ?? latestRun;
+  const toolEvents = shownRun
+    ? await rows<ToolEvent>(db.from("tool_events").select("*").eq("run_id", shownRun.id).order("seq"))
     : [];
 
   return {
@@ -84,8 +87,9 @@ export async function getClaimDetail(claimId: string) {
     receiptUrl,
     runs,
     latestRun,
-    // The recommendation from the latest run (null if that run failed).
-    recommendation: recommendations.find((rec) => rec.run_id === latestRun?.id) ?? null,
+    shownRun,
+    // The recommendation from the run being shown (null if that run failed).
+    recommendation: recommendations.find((rec) => rec.run_id === shownRun?.id) ?? null,
     toolEvents,
     decisions,
   };

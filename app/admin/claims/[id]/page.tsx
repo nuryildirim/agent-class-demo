@@ -6,7 +6,8 @@
 //   - the trace: every tool call the agent made, in order
 //
 // The folder name [id] makes this a dynamic route: /admin/claims/C13 opens
-// this page with params.id = "C13".
+// this page with params.id = "C13". Adding ?run=<id> shows an older agent run
+// instead of the latest one (the evaluation page links to these).
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -17,11 +18,19 @@ import { RunAgentButton } from "@/app/components/run-agent-button";
 import { getClaimDetail } from "@/lib/claims";
 import type { ToolEvent } from "@/lib/db";
 
-export default async function ClaimPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ClaimPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ run?: string }>;
+}) {
   const { id } = await params;
-  const detail = await getClaimDetail(id);
+  const { run } = await searchParams;
+  const detail = await getClaimDetail(id, run);
   if (!detail) notFound();
-  const { claim, receiptUrl, runs, latestRun, recommendation: rec, toolEvents, decisions } = detail;
+  const { claim, receiptUrl, runs, latestRun, shownRun, recommendation: rec, toolEvents, decisions } = detail;
+  const showingOldRun = shownRun !== null && shownRun.id !== latestRun?.id;
 
   const isOpen = ["submitted", "recommended", "needs_info"].includes(claim.status);
   const running = isActive(latestRun);
@@ -68,8 +77,14 @@ export default async function ClaimPage({ params }: { params: Promise<{ id: stri
       {/* ---- The agent's recommendation ---- */}
       <h2>Agent recommendation</h2>
       {running && <p className="callout">The agent is reviewing this claim now…</p>}
-      {!running && latestRun?.status === "failed" && (
-        <p className="error">The last agent run failed: {latestRun.error}</p>
+      {showingOldRun && (
+        <p className="callout">
+          You are looking at an older run ({modelLabel(shownRun.model)}, {new Date(shownRun.started_at).toLocaleString()}
+          ). <Link href={`/admin/claims/${claim.id}`}>Show the latest run</Link>
+        </p>
+      )}
+      {!running && shownRun?.status === "failed" && (
+        <p className="error">This agent run failed: {shownRun.error}</p>
       )}
       {!running && !latestRun && <p className="muted">The agent has not reviewed this claim yet.</p>}
 
@@ -176,11 +191,11 @@ export default async function ClaimPage({ params }: { params: Promise<{ id: stri
 
       {/* ---- The audit trail ---- */}
       <h2>Trace: how the agent got there</h2>
-      {latestRun && (
+      {shownRun && (
         <p className="small muted">
-          {modelLabel(latestRun.model)}, {new Date(latestRun.started_at).toLocaleString()}
-          {latestRun.turns !== null &&
-            ` · ${latestRun.turns} turns · ${latestRun.input_tokens} tokens in, ${latestRun.output_tokens} out · about $${Number(latestRun.cost_usd).toFixed(4)}`}
+          {modelLabel(shownRun.model)}, {new Date(shownRun.started_at).toLocaleString()}
+          {shownRun.turns !== null &&
+            ` · ${shownRun.turns} turns · ${shownRun.input_tokens} tokens in, ${shownRun.output_tokens} out · about $${Number(shownRun.cost_usd).toFixed(4)}`}
         </p>
       )}
       {toolEvents.length === 0 ? (
@@ -201,9 +216,20 @@ export default async function ClaimPage({ params }: { params: Promise<{ id: stri
           />
         )}
         {runs.length > 1 && (
-          <p className="small muted">
-            This claim has {runs.length} agent runs. The trace above is from the latest one.
-          </p>
+          <details className="small">
+            <summary>All {runs.length} agent runs on this claim</summary>
+            <ul>
+              {runs.map((r) => (
+                <li key={r.id}>
+                  <Link href={`/admin/claims/${claim.id}?run=${r.id}`}>
+                    {modelLabel(r.model)}, {new Date(r.started_at).toLocaleString()}
+                  </Link>{" "}
+                  <Badge value={r.status} />
+                  {r.id === shownRun?.id && " (shown above)"}
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
       </div>
     </>

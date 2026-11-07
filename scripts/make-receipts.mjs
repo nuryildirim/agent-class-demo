@@ -26,6 +26,15 @@ function receiptTotalCents(receipt) {
   return items + cents(receipt.tax?.[1] ?? 0) + cents(receipt.tip ?? 0);
 }
 
+// Courier is a fixed-width font: each character is 0.6 times the font size
+// wide. A line longer than the receipt's 400px of usable width gets a smaller
+// font so it fits. (Without this, long lines ran off the right edge, and the
+// model correctly reported those receipts as only partly readable.)
+const fitFont = (text, size = 22) => {
+  const fitted = Math.min(size, Math.floor(400 / (text.length * 0.6)));
+  return fitted < size ? `font-size="${fitted}"` : "";
+};
+
 // SVG treats & and < as special characters, so escape them.
 const esc = (s) => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
 
@@ -36,9 +45,9 @@ function drawReceipt(r) {
   let y = 70;
 
   rows.push([y, esc(r.merchant), null, 'text-anchor="middle" font-size="30" font-weight="bold"']);
-  for (const line of r.address) rows.push([(y += 35), esc(line), null, 'text-anchor="middle"']);
+  for (const line of r.address) rows.push([(y += 35), esc(line), null, `text-anchor="middle" ${fitFont(line)}`]);
   y += 25;
-  for (const line of r.meta) rows.push([(y += 30), esc(line), null, ""]);
+  for (const line of r.meta) rows.push([(y += 30), esc(line), null, fitFont(line)]);
   y += 20;
 
   let subtotal = 0;
@@ -52,7 +61,7 @@ function drawReceipt(r) {
   if (r.tax) rows.push([(y += rowHeight), esc(r.tax[0]), r.tax[1].toFixed(2), ""]);
   if (r.tip) rows.push([(y += rowHeight), "Tip", r.tip.toFixed(2), ""]);
   rows.push([(y += 44), "TOTAL USD", money(receiptTotalCents(r)), 'font-weight="bold" font-size="26"']);
-  rows.push([(y += 44), esc(r.payment), null, ""]);
+  rows.push([(y += 44), esc(r.payment), null, fitFont(r.payment)]);
   rows.push([(y += 40), "Thank you!", null, 'text-anchor="middle"']);
 
   const text = rows

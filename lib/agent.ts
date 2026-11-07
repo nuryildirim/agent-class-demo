@@ -47,6 +47,9 @@ Choosing an outcome:
 Follow what the policy text says to do. When in doubt, choose review.
 
 Never guess at a value you cannot read. Record it as unreadable instead.
+If any part of the receipt is not clearly readable (you would record its
+legibility as partly_readable or unreadable), choose review, even if the total
+looks right: the policy needs a readable itemized receipt (GEN-02).
 Cite the evidence (receipt, check results, other claims) behind each reason.`;
 
 export type ReviewResult = {
