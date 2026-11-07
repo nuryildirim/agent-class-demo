@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const claimId = String(body.claimId ?? "");
   const model: ModelName = body.model in MODELS ? body.model : "haiku";
-  if (!/^C\d{2}$/.test(claimId)) {
+  if (!/^C\d+$/.test(claimId)) {
     return NextResponse.json({ error: "claimId must look like C01" }, { status: 400 });
   }
 
