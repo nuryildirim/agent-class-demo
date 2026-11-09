@@ -154,7 +154,7 @@ Use these to show a simple accuracy score, which also introduces evaluation. Do 
 ### 6. Prepare for class
 - ~~Add replay mode with recorded runs.~~ Dropped (November 7, 2026): the class gets a live demo, and students read the code rather than run it.
 - Write the README for students: `README.md`.
-- Rehearse the walkthrough: `_docs/walkthrough.md`.
+- ~~Rehearse the walkthrough: `_docs/walkthrough.md`.~~ Removed (November 9, 2026). The browser test (`_docs/browser-test.md`) covers the full flow.
 
 ## Prototype done when
 

@@ -2,7 +2,7 @@
 
 _Tested November 7, 2026, in Chrome against the local dev server (`npm run dev`, http://localhost:3000). Screenshots are in `_docs/screenshots/`._
 
-This follows Parts 1–4 and 6 of `_docs/walkthrough.md`, using the existing data rather than a fresh `npm run db:setup`. Every step worked. Both live agent runs used Haiku 5.5 and cost about $0.005 together.
+This walks through the full flow, from the home page to the evaluation page, using the existing data rather than a fresh `npm run db:setup`. Every step worked. Both live agent runs used Haiku 5.5 and cost about $0.005 together.
 
 ## 1. Home page
 
@@ -100,6 +100,6 @@ The evaluation page compares every recorded run on the 20 demo claims with the a
 
 ## Notes from the test
 
-- **Database state changed.** C13 now has a Haiku recommendation (it was Sonnet before), C11 is approved, and there is a new rejected claim, C22. Run `npm run db:setup` before class if you want the fresh starting state described in the walkthrough.
-- **Evaluation numbers differ from the walkthrough.** The page counts every run in the database (Haiku 185/201, Sonnet 175/181, with 1 and 3 unsafe approvals). The walkthrough quotes the final 3-repeat scores (Sonnet 60/60, Haiku 58/60, no unsafe approvals). Students may notice the difference. The extra runs are probably from development, including runs from before the eval bugs were fixed. After a fresh `db:setup`, the page shows only the runs from that day.
+- **Database state changed.** C13 now has a Haiku recommendation (it was Sonnet before), C11 is approved, and there is a new rejected claim, C22. Run `npm run db:setup` before class if you want the fresh starting state from `data/`.
+- **Evaluation numbers differ from the evaluation report.** The page counts every run in the database (Haiku 185/201, Sonnet 175/181, with 1 and 3 unsafe approvals). `_docs/evals.md` quotes the final 3-repeat scores (Sonnet 60/60, Haiku 58/60, no unsafe approvals). Students may notice the difference. The extra runs are probably from development, including runs from before the eval bugs were fixed. After a fresh `db:setup`, the page shows only the runs from that day.
 - **Employee status wording.** Claims the agent has reviewed but the admin has not decided show **submitted** in the employee view and **recommended** in the admin view. This looks intentional, since employees don't see the agent's advice.
