@@ -212,3 +212,7 @@ This is a demo, not production software.
 
 - `_docs/handoff.md`: the original plan and the design decisions behind it.
 - `_docs/evals.md`: the evaluation report, with what we found and fixed.
+- `_docs/browser-test.md`: a browser test of the full flow, from submitting a
+  claim to the admin's decision, with screenshots.
+- `_docs/genai-vs-agentic.md`: a class note on what makes this app an agent,
+  and why a single LLM API call could not do the same job.
